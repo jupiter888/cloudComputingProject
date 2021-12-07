@@ -1,0 +1,31 @@
+var filter1 = S2
+  .filterDate("2019-09-01","2019-10-23")
+  .filterBounds(Map.getBounds(true))
+  .sort("CLOUD_COVERAGE_ASSESSMENT",true)//lowest value goes first
+var filter2 = S2
+  .filterDate("2020-09-01","2020-12-23")
+  .filterBounds(Map.getBounds(true))
+  .sort("CLOUD_COVERAGE_ASSESSMENT",true)//lowest value goes first
+  
+//print("Count of images", filter.size())
+//print("List of images", filter1)
+//to see the cloud cover: console/list of images/image collection/features/(any of the images 1-19)/properties/ now look at two attributes:
+//cloudy pixel percentage & cloud coverage assessment. the lower the number the more clear the tile (100km X 100km)
+
+var first = filter1.first()
+var second = filter2.first()
+var image1 = ee.Image(first)
+var image2 = ee.Image(second)
+
+var VisParams = {
+  bands:["B4","B3","B2"],
+  min:400,
+  max:2000
+}
+Map.addLayer(image1,VisParams,"True Color")
+Map.addLayer(image2,VisParams,"True Color")
+
+var NDVI_before= image1.normalizedDifference(["B8","B4"])
+var NDVI_after= image2.normalizedDifference(["B8","B4"])
+Map.addLayer(NDVI_before,{min:-0.2,max:0.2,palette:"blue,grey,white,green"},"NDVI")
+Map.addLayer(NDVI_after,{min:-0.2,max:0.2,palette:"blue,grey,white,green"},"NDVI")
