@@ -1,0 +1,86 @@
+var filter1 = S2
+  .filterDate("2019-09-01","2019-10-23")
+  .filterBounds(Map.getBounds(true))
+  .sort("CLOUD_COVERAGE_ASSESSMENT",true)//lowest value goes first
+var filter2 = S2
+  .filterDate("2020-09-01","2020-12-23")
+  .filterBounds(Map.getBounds(true))
+  .sort("CLOUD_COVERAGE_ASSESSMENT",true)//lowest value goes first
+  
+//print("Count of images", filter1.size())
+print("List of images", filter1)
+//to see the cloud cover: console/list of images/image collection/features/(any of the images 1-19)/properties/ now look at two attributes:
+//cloudy pixel percentage & cloud coverage assessment. the lower the number the more clear the tile (100km X 100km)
+
+var first = filter1.first()
+var second = filter2.first()
+var image1 = ee.Image(first)
+var image2 = ee.Image(second)
+
+var VisParams = {
+  bands:["B4","B3","B2"],
+  min:400,
+  max:2000
+}
+Map.addLayer(image1,VisParams,"True Color")
+Map.addLayer(image2,VisParams,"True Color")
+
+
+//***************************************************************************************
+//NDVI
+var NDVI_before= image1.normalizedDifference(["B8","B4"])
+var NDVI_after= image2.normalizedDifference(["B8","B4"])
+Map.addLayer(NDVI_before,{min:-0.2,max:0.2,palette:"blue,green,white,black"},"NDVI")
+Map.addLayer(NDVI_after,{min:-0.2,max:0.2,palette:"blue,green,white,black"},"NDVI")
+//***************************************************************************************
+
+
+//***************************************************************************************
+//∆NDVI
+//*
+// displaying NDVI in better colours
+//only a few accepted palletes for the NDVI, below is one of them
+var NDVI_palette = 'FFFFFF, CE7E45, DF923D, F1B555, FCD163, 99B718, 74A901, 66A000, 529400, ' + '3E8601, 207401, 056201, 004C00, 023B01, 012E01, 011D01, 011301';
+//*continue creating the deltaNDVI, and add this pallete to the map
+var delta_NDVI= NDVI_before.subtract(NDVI_after)
+Map.addLayer(delta_NDVI, {min: -0.2, max: 1, palette: NDVI_palette}, 'NDVI_colour',false);
+//***************************************************************************************
+
+//**
+// center on the geometry object to focus on area of interest
+Map.centerObject(geometry);
+//**
+
+//***************************************************************************************
+//try to use the map.center with var and coordinates
+//Map.centerObject(filter2,11,true)
+Map.setCenter(- 119.261175 , 37.19147, 11) //this is better to use for centering in my experience
+//***************************************************************************************
+
+//California Creek Fire coordinates: 37.19147°N 119.261175°W
+
+//***************************************************************************************
+//can add in times and label as prefire and postfire
+
+
+var prefire_start='2020-08-30'
+var prefire_end='2020-09-02'
+
+var postfire_start='2020-12-21'
+var postfire_end='2020-01-03'
+//***************************************************************************************
+
+//checklist for completion
+//1. NDVI=(NIR-RED)/(NIR+RED) _+___
+//2. NDVI works _+___
+//3. NBR works __+__
+//4. geometry focused on area of interest _+___
+//5. ∆NDVI  _+___
+//6. error"undefined is not an object(evaluating 'f.coordinates') __+solved__
+//7. c.call is not a function. (In 'c.call()', 'c.call' is undefined)
+//8. error free  __-__
+//***************************************************************************************
+
+
+
+
